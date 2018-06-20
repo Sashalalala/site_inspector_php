@@ -8,9 +8,8 @@ class Router {
 
     private static function setPath(){
         $uri= $_SERVER['REQUEST_URI'];
-        $path = parse_url($uri)['path'];
+        $path = pathUnslash(parse_url($uri)['path']);
         self::$path = $path;
-        echo self::$path;
     }
 
     public static function getPath(){
@@ -20,17 +19,30 @@ class Router {
         return self::$path;
     }
 
-    public static function autoload(){
-        spl_autoload_register(function($className){
-            if(file_exists(APP_DIR.'/Controllers/'. $className . '.php')){
-                include APP_DIR.'/Controllers/'. $className . '.php';
-            }
-        });
-    }
 
-    public static function addRoute($path, $callBack){
+    public static function forward($path, $callBack){
         if($path === self::getPath()){
             $callBack();
+            return true;
+        }
+        return false;
+    }
+
+    public static function addRoute($path,  $callback){
+        self::$routes[] = [$path, $callback];
+    }
+
+    public static function start(){
+        if(!empty(self::$routes)){
+            foreach (self::$routes as $route){
+                try{
+                    $isForward = self::forward($route[0], $route[1]);
+                    if($isForward) return true;
+                } catch (Exception $e){
+                    echo 'Bad route - ' . implode(' : ', $route) ."\n". $e->getMessage();
+                    return false;
+                }
+            }
         }
     }
 }

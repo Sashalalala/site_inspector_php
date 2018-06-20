@@ -35,8 +35,16 @@ spl_autoload_register(function($className){
  */
 require APP_DIR.'/helpers.php';
 
-Router::addRoute('/', 'MainCtrl::init');
+Router::addRoute('/', array('MainCtrl','init'));
 Router::addRoute('/inspect', 'InspectCtrl::init');
+
+$isForward = Router::start();
+
+if(!$isForward){
+    render404Page();
+}
+
+exit;
 
 
 
